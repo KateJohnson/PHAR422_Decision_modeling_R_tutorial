@@ -10,7 +10,13 @@
 ## Installation
 We will be using R through a Jupyter notebook on UBC Syzygy.
 
+### Step 1: Open an R Notebook
+Graphical instructions can be found [here](https://scidesign.github.io/jupyterstarter.html).
 1. Go to https://ubc.syzygy.ca/ and sign in using your UBC CWL
 2. Open an R notebook
-3. Clone this repo
+
+### Step 2: Clone this repo to access tutorial materials
+3. Go to
+4. On Syzygy: Git -> Clone a repository -> _enter the URL_
+   
 
