@@ -1,0 +1,13 @@
+---
+title: "Sick-sicker cohort model"
+format: html
+editor: visual
+---
+
+This example and code comes from: Alarid-Escudero F, Krijkamp EM, Enns EA, Yang A, Hunink MGM, Pechlivanoglou P, Jalal H. [An Introductory Tutorial on Cohort State-Transition Models in R Using a Cost-Effectiveness Analysis Example](https://journals.sagepub.com/doi/full/10.1177/0272989X221103163). [Medical Decision Making](https://journals.sagepub.com/home/mdm), 2023;43(1):3-20. <https://doi.org/10.1177/0272989X221103163>
+
+## Model description
+
+Sick-sicker model schematic
+
+![](Figures/Sick_sicker_model_schematic.jpeg)

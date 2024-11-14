@@ -15,5 +15,13 @@ follow these instructions from the UBC MDS program https://ubc-mds.github.io/res
 
 **Please do this before the start of class**
 
+### Download a local version of this repository
 
-- With R and RStudio (posit) installed, open the folder "PHAR422_Decision_modeling_R_tutorial" from Canvas
+- Go to https://github.com/KateJohnson/PHAR422_Decision_modeling_R_tutorial
+- Under the green 'code' button (top right), 'download ZIP' to download a local copy of the entire repository and its contexts
+![ ](Figures/download_zip.png)
+- Unzip and open the repository from your downloads folder
+- Click to open the .Rproj folder (using the RStudio application, if asked)
+
+*Note: you may want to move the R project folder out of your downloads folder to a more logical place, such as where you store 
+class materials on your computer. You can do that within finder by dragging and dropping the entire folder to your preferred location.
