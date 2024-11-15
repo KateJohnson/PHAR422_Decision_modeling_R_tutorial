@@ -77,11 +77,9 @@ p_S2D <- 1 - exp(-r_S2D * cycle_length) # annual probability of dying when Sicke
 Now we put all the parameters we've defined, as well as some global parameters into the form that heemod wants them in:
 
 ```{r}
-
 param <- define_parameters(
 # global parameters
 age_init = 25, # starting age
-age = age_init + model_time, # model_time is a count (1,2,3...) defined by the heemod run_model function
 r_discount = 0.03, # discount rate for costs and QALYs
 
 # transtion probabilities
@@ -112,39 +110,122 @@ u_trtA = 0.95 # annual utility when receiving treatment A
 ### Creating transition matrices
 
 ```{r}
+states <- c("H", "S1", "S2","D")
 
+# transition probability matrix for strategy SoC
+mat_SoC <- define_transition( 
+  C, (1 - p_HD) * p_HS1, 0, p_HD,
+  (1 - p_S1D) * p_S1H, C, (1 - p_S1D) * p_S1S2, p_S1D,
+  0, 0, C, p_S2D,
+  0, 0, 0, 1,
+  state_names = states
+)
+
+# transition probability matrix for strategy A
+mat_strA <- define_transition( 
+  C, (1 - p_HD) * p_HS1, 0, p_HD,
+  (1 - p_S1D) * p_S1H, C, (1 - p_S1D) * p_S1S2, p_S1D,
+  0, 0, C, p_S2D,
+  0, 0, 0, 1,
+  state_names = states
+)
+
+plot(mat_strA)
 ```
 
 ### Defining states
 
 ```{r}
+## Standard of Care (SoC)
+# Healthy
+state_H<- define_state(
+  cost = discount(c_H, r_discount),
+  utility = discount(u_H, r_discount)
+)
+# S1
+state_S1<- define_state(
+  cost = discount(c_S1, r_discount),
+  utility = discount(u_S1, r_discount)
+)
+# S2
+state_S2 <- define_state(
+  cost = discount(c_S2, r_discount),
+  utility = discount(u_S2, r_discount)
+)
+# Death
+state_D <- define_state(
+  cost = c_D,
+  utility = u_D
+)
 
+## Treatment A
+# Healthy
+state_H_strA <- define_state(
+  cost = discount(c_H, r_discount),
+  utility = discount(u_H, r_discount)
+)
+# S1
+state_S1_strA <- define_state(
+  cost = discount(c_S1 + c_trtA, r_discount),
+  utility = discount(u_trtA, r_discount)
+)
+# S2
+state_S2_strA <- define_state(
+  cost = discount(c_S2 + c_trtA, r_discount),
+  utility = discount(u_S2, r_discount)
+)
+# Death
+state_D_strA <- define_state(
+  cost = c_D,
+  utility = u_D
+)
 ```
 
 ### Defining strategies
 
 ```{r}
+## Standard of Care (SoC) 
+strat_SoC <- define_strategy(
+ transition = mat_SoC,
+ H = state_H,
+ S1 = state_S1,
+ S2 = state_S2,
+ D = state_D
+)
 
+## Treatment A
+strat_strA <- define_strategy(
+ transition = mat_strA,
+ H = state_H_strA,
+ S1 = state_S1_strA,
+ S2 = state_S2_strA,
+ D = state_D_strA
+)
 ```
 
 The initial distribution between states in model cycle 0 also needs to be defined. All patients start in the healthy state.
 
 ```{r}
- v_m_init <- c(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
+time0 <- define_init(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
 ```
 
 ### Run the model
 
 ```{r}
-  res_mod <- run_model(
+# run for 75 model cycles (years)
+total_cycles <- 75
+
+res_mod <- run_model(
     init=time0,
-    normal = strat_normal,
-    hepa = strat_hepa,
-    cycles = totalCycles,
+    cycles = total_cycles, 
+    SoC = strat_SoC, 
+    strA = strat_strA,
     parameters = param,
-    cost = cost_total,
-    effect = life_year
+    cost = cost,
+    effect =  utility
   )
+
+res_mod
 ```
 
 ## Sensitivity Analyses
