@@ -1,20 +1,53 @@
----
-title: "PHAR 422: Sick-sicker Cohort Markov Model Tutorial"
-format: md
-editor: visual
----
+# PHAR 422: Sick-sicker Cohort Markov Model Tutorial
 
-This example and code comes from: Alarid-Escudero F, Krijkamp EM, Enns EA, Yang A, Hunink MGM, Pechlivanoglou P, Jalal H. [An Introductory Tutorial on Cohort State-Transition Models in R Using a Cost-Effectiveness Analysis Example](https://journals.sagepub.com/doi/full/10.1177/0272989X221103163). [Medical Decision Making](https://journals.sagepub.com/home/mdm), 2023;43(1):3-20. <https://doi.org/10.1177/0272989X221103163>
+This example and code comes from: Alarid-Escudero F, Krijkamp EM, Enns
+EA, Yang A, Hunink MGM, Pechlivanoglou P, Jalal H. [An Introductory
+Tutorial on Cohort State-Transition Models in R Using a
+Cost-Effectiveness Analysis
+Example](https://journals.sagepub.com/doi/full/10.1177/0272989X221103163).
+[Medical Decision Making](https://journals.sagepub.com/home/mdm),
+2023;43(1):3-20. <https://doi.org/10.1177/0272989X221103163>
 
 ## Model description
 
-A disease has four health states, healthy, sick, sicker, and death. In this model, we simulate a hypothetical cohort of 25-y-olds in the \"Healthy\" state (denoted \"H\") until they reach a maximum age of 100 y. We will simulate the cohort dynamics in annual cycle lengths, requiring a total of 75 one-year cycles.
+A disease has four health states, healthy, sick, sicker, and death. In
+this model, we simulate a hypothetical cohort of 25-y-olds in the
+"Healthy" state (denoted "H") until they reach a maximum age of 100 y.
+We will simulate the cohort dynamics in annual cycle lengths, requiring
+a total of 75 one-year cycles.
 
-Healthy individuals are at risk of developing the disease when they transition to the \"Sick\" state (denoted by \"S1\") with an annual rate of 15 'sick' cases per 100 patient years (`r_HS1`). Sick individuals are at risk of further progressing to a more severe disease stage, the \"sicker\" health state (denoted by \"S2\") with an annual rate of 105 'sicker' cases per 1000 'sick' patient years(`r_S1S2`). Individuals in S1 can recover and return to H, at a rate of 1 patient recovering for every 2 patients spending a year in the 'sick' state (`p_S1H`). However, once individuals reach S2, they cannot recover to either the sick (S1) or healthy (H) states. Healthy individuals (those in H) face a constant background mortality (`p_HD`) due to other causes of death of 0.002 per patient-year. Individuals in S1 and S2 face an increased hazard of death, compared with healthy individuals, in the form of an HR of 3 and 10, respectively, relative to the background mortality rate.
+Healthy individuals are at risk of developing the disease when they
+transition to the "Sick" state (denoted by "S1") with an annual rate of
+15 ‘sick’ cases per 100 patient years (`r_HS1`). Sick individuals are at
+risk of further progressing to a more severe disease stage, the "sicker"
+health state (denoted by "S2") with an annual rate of 105 ‘sicker’ cases
+per 1000 ‘sick’ patient years(`r_S1S2`). Individuals in S1 can recover
+and return to H, at a rate of 1 patient recovering for every 2 patients
+spending a year in the ‘sick’ state (`p_S1H`). However, once individuals
+reach S2, they cannot recover to either the sick (S1) or healthy (H)
+states. Healthy individuals (those in H) face a constant background
+mortality (`p_HD`) due to other causes of death of 0.002 per
+patient-year. Individuals in S1 and S2 face an increased hazard of
+death, compared with healthy individuals, in the form of an HR of 3 and
+10, respectively, relative to the background mortality rate.
 
-Individuals in S1 experience health care costs of \$4,000 per year compared to \$2,000 per year for healthy individuals. Those in S2 experience annual health care costs of \$15,000. The utility for the healthy state is 1, for the sick state it is 0.75, for the sicker state it is 0.5, and for the death state it is 0. When individuals die, they transition to the absorbing \"Dead\" state (denoted by \"D\"). We discount both costs and QALYs at an annual rate of 3%.
+Individuals in S1 experience health care costs of $4,000 per year
+compared to $2,000 per year for healthy individuals. Those in S2
+experience annual health care costs of $15,000. The utility for the
+healthy state is 1, for the sick state it is 0.75, for the sicker state
+it is 0.5, and for the death state it is 0. When individuals die, they
+transition to the absorbing "Dead" state (denoted by "D"). We discount
+both costs and QALYs at an annual rate of 3%.
 
-We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and treatment A. Treatment A that increases the QoL of individuals in S1 from 0.75 (utility without treatment, `u_S1`) to 0.95 (utility with treatment A, `u_trtA`). Treatment A costs \$12,000 per year (`c_trtA`). We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment. This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
+We are interested in evaluating the cost-effectiveness of strategies:
+the standard of care (strategy SoC) and treatment A. Treatment A that
+increases the QoL of individuals in S1 from 0.75 (utility without
+treatment, `u_S1`) to 0.95 (utility with treatment A, `u_trtA`).
+Treatment A costs $12,000 per year (`c_trtA`). We assume that it is not
+possible to distinguish between Sick and Sicker patients; therefore,
+individuals in both disease states receive the treatment. This strategy
+does not affect the QoL of individuals in S2, nor does it change the
+risk of becoming sick or progressing through the sick states.
 
 Calculate the incremental cost per QALY gained.
 
@@ -24,22 +57,45 @@ Calculate the incremental cost per QALY gained.
 
 ## Modeling
 
-First we'll load some helpful packages.
+First we’ll load some helpful packages.
 
-```{r}
+``` r
 # Note the packages must first be installed with:
 # install.packages("tidyverse")
 # install.packages("heemod")
 
 library(tidyverse)
+```
+
+    ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ✔ dplyr     1.1.2     ✔ readr     2.1.4
+    ✔ forcats   1.0.0     ✔ stringr   1.5.0
+    ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+    ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+    ✔ purrr     1.0.1     
+    ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ✖ dplyr::filter() masks stats::filter()
+    ✖ dplyr::lag()    masks stats::lag()
+    ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+
+``` r
 library(heemod)
 ```
+
+    Warning: package 'heemod' was built under R version 4.3.3
+
+
+    Attaching package: 'heemod'
+
+    The following object is masked from 'package:purrr':
+
+        modify
 
 ### Defining parameters
 
 First, define parameters based on the model description.
 
-```{r}
+``` r
 ## Transition probabilities (annual), and hazard ratios (HRs)
 r_HD <- 0.002 # annual rate of dying when Healthy (all-cause mortality rate)
 r_HS1 <- 0.15 # annual rate of becoming Sick when Healthy
@@ -53,9 +109,10 @@ r_S1D <- r_HD * hr_S1 # annual mortality rate in the Sick state
 r_S2D <- r_HD * hr_S2 # annual mortality rate in the Sicker state
 ```
 
-Then we can transform all rates to probabilities by scaling by the cycle length (1 year).
+Then we can transform all rates to probabilities by scaling by the cycle
+length (1 year).
 
-```{r}
+``` r
 # Note: heemod also has helper functions for transformations, but for now we'll apply the formulas you learned in class
 # e.g. p_HS1 <- rate_to_prob(r=r_HS1, per=cycle_length)
 
@@ -72,9 +129,10 @@ p_S1D <- 1 - exp(-r_S1D * cycle_length) # annual probability of dying when Sick
 p_S2D <- 1 - exp(-r_S2D * cycle_length) # annual probability of dying when Sicker
 ```
 
-Now we put all the parameters we've defined and some global parameters into the form that heemod wants them in:
+Now we put all the parameters we’ve defined and some global parameters
+into the form that heemod wants them in:
 
-```{r}
+``` r
 param <- define_parameters(
 # global parameters
 age_init = 25, # starting age
@@ -107,7 +165,7 @@ u_trtA = 0.95 # annual utility when receiving treatment A
 
 ### Creating transition matrices
 
-```{r}
+``` r
 states <- c("H", "S1", "S2","D")
 
 # transition probability matrix for strategy SoC
@@ -129,12 +187,19 @@ mat_strA <- define_transition(
 )
 
 plot(mat_SoC) # visual checks
+```
+
+    Loading required namespace: diagram
+
+``` r
 plot(mat_strA) 
 ```
 
+![](markov_model_tutorial.markdown_strict_files/figure-markdown_strict/unnamed-chunk-5-1.png)
+
 ### Defining states
 
-```{r}
+``` r
 ## Standard of Care (SoC)
 # Healthy
 state_H<- define_state(
@@ -182,7 +247,7 @@ state_D_strA <- define_state(
 
 ### Defining strategies
 
-```{r}
+``` r
 ## Standard of Care (SoC) 
 strat_SoC <- define_strategy(
  transition = mat_SoC,
@@ -202,15 +267,21 @@ strat_strA <- define_strategy(
 )
 ```
 
-The initial distribution between states in model cycle 0 also needs to be defined. All patients start in the healthy state. Note that in this case we're simulating the state transitions for only 1 patient as it simplifies results reporting, which by convention are usually reported as costs and QALYs *per patient*. If it's easier you can think of the resulting markov trace as showing the proportion of patients in each state in each model cycle.
+The initial distribution between states in model cycle 0 also needs to
+be defined. All patients start in the healthy state. Note that in this
+case we’re simulating the state transitions for only 1 patient as it
+simplifies results reporting, which by convention are usually reported
+as costs and QALYs *per patient*. If it’s easier you can think of the
+resulting markov trace as showing the proportion of patients in each
+state in each model cycle.
 
-```{r}
+``` r
 time0 <- define_init(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
 ```
 
 ### Run the model
 
-```{r}
+``` r
 # run for 75 model cycles (years)
 total_cycles <- 75
 
@@ -226,12 +297,17 @@ res_mod <- run_model(
   )
 ```
 
-First let's look at the markov trace showing the probability distribution between states for each of the 75 model cycles.
+First let’s look at the markov trace showing the probability
+distribution between states for each of the 75 model cycles.
 
-```{r}
+``` r
 # Default heemod plot giving the proportion of patients in each model cycle
 plot(res_mod)
+```
 
+![](markov_model_tutorial.markdown_strict_files/figure-markdown_strict/unnamed-chunk-10-1.png)
+
+``` r
 # The same information but as data frames for each strategy
 markov_trace <- get_counts(res_mod) 
 
@@ -248,11 +324,13 @@ markov_trace_trtA <- markov_trace %>%
                     pivot_wider(names_from=state, values_from=proportion)
 ```
 
-**\*\*Question: Are there any differences between the Markov traces for each strategy? Why or why not?**
+**\*\*Question: Are there any differences between the Markov traces for
+each strategy? Why or why not?**
 
-Now let's look at the costs and QALYs for each model cycle in both strategies.
+Now let’s look at the costs and QALYs for each model cycle in both
+strategies.
 
-```{r}
+``` r
 cycle_payoffs <- get_values(res_mod)
 
 cycle_payoffs_SoC <- cycle_payoffs %>% 
@@ -266,27 +344,102 @@ cycle_payoffs_trtA <- cycle_payoffs %>%
                                  =value_names, value) %>% 
                           filter(strategy=="trtA") %>% 
                           pivot_wider(names_from=payoffs, values_from=value)
-
 ```
 
-**\*\*Question: Are there any differences between the cycle payoffs for each strategy? Why or why not?**
+**\*\*Question: Are there any differences between the cycle payoffs for
+each strategy? Why or why not?**
 
-Now, let's sum the model payoffs to get total costs and QALYs for each strategy.
+Now, let’s sum the model payoffs to get total costs and QALYs for each
+strategy.
 
-```{r}
+``` r
 ## Two different ways to get total costs and QALYS for each strategy
 # 1. Using our payoffs data: 
 knitr::kable(cycle_payoffs_SoC %>% 
     summarise(total_cost=sum(cost), total_QALY=sum(utility)) %>% 
       mutate(strategy="SoC"))
+```
 
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">total_cost</th>
+<th style="text-align: right;">total_QALY</th>
+<th style="text-align: left;">strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">154535.4</td>
+<td style="text-align: right;">21.34647</td>
+<td style="text-align: left;">SoC</td>
+</tr>
+</tbody>
+</table>
+
+``` r
 knitr::kable(cycle_payoffs_trtA %>% 
     summarise(total_cost=sum(cost), total_QALY=sum(utility)) %>% 
       mutate(strategy="trtA"))
+```
 
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">total_cost</th>
+<th style="text-align: right;">total_QALY</th>
+<th style="text-align: left;">strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">289954.7</td>
+<td style="text-align: right;">22.14902</td>
+<td style="text-align: left;">trtA</td>
+</tr>
+</tbody>
+</table>
+
+``` r
 # 2. Looking at the default outputs of the run_model function
 summary(res_mod)
+```
 
+    2 strategies run for 75 cycles.
+
+    Initial state counts:
+
+    H = 1
+    S1 = 0
+    S2 = 0
+    D = 0
+
+    Counting method: 'life-table'.
+
+     
+
+    Counting method: 'beginning'.
+
+     
+
+    Counting method: 'end'.
+
+    Values:
+
+             cost  utility
+    SoC  154535.4 21.34647
+    trtA 289954.7 22.14902
+
+    Efficiency frontier:
+
+    SoC -> trtA
+
+    Differences:
+
+         Cost Diff. Effect Diff.   ICER Ref.
+    trtA   135419.3    0.8025514 168736  SoC
+
+``` r
 # Putting the incremental results in a prettier dataframe
 icer <- summary(res_mod)$res_comp 
 
@@ -298,6 +451,27 @@ icer <- icer %>%
     
 knitr::kable(icer)
 ```
+
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">strategy</th>
+<th style="text-align: left;">ref</th>
+<th style="text-align: right;">deltaCost</th>
+<th style="text-align: right;">deltaEffect</th>
+<th style="text-align: right;">icer</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">SoC</td>
+<td style="text-align: right;">135419.3</td>
+<td style="text-align: right;">0.8025514</td>
+<td style="text-align: right;">168736</td>
+</tr>
+</tbody>
+</table>
 
 **\*\*Question: What is the ICER? Would you fund treatment A?**
 
