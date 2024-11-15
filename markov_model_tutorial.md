@@ -479,4 +479,165 @@ knitr::kable(icer)
 
 ### One-way sensitivity analysis
 
+Let’s examine the sensitivity of our results to the following
+parameters:
+
+-   Utility of sick individuals under treatment A
+
+-   The cost of treatment A
+
+-   The discount rate
+
+``` r
+dsa_params <-  define_dsa (
+                    u_trtA, 0.85, 1,  # define lower and upper bounds, in the base case u_trtA = 0.95
+                    c_trtA, 9000, 15000, # define lower and upper bounds, in the base case c_trtA = 12000
+                    r_discount, 0.015, 0.045 # define lower and upper bounds, in the base case r_discount = 0.03
+                  )
+
+# Re-run the model
+res_dsa <- run_dsa(
+                  model = res_mod,
+                  dsa = dsa_params
+)
+```
+
+    Running DSA on strategy 'SoC'...
+
+    Running DSA on strategy 'trtA'...
+
+Let’s look at the results in a table.
+
+``` r
+dsa_temp <- res_dsa$dsa
+
+dsa_totals <-  dsa_temp %>% 
+                      select(strategy=.strategy_names, parameter=.par_names, value=.par_value
+                             , cost, utility) %>%   arrange(parameter, value)
+knitr::kable(dsa_totals)
+```
+
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">strategy</th>
+<th style="text-align: left;">parameter</th>
+<th style="text-align: left;">value</th>
+<th style="text-align: right;">cost</th>
+<th style="text-align: right;">utility</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">c_trtA</td>
+<td style="text-align: left;">15000</td>
+<td style="text-align: right;">154535.4</td>
+<td style="text-align: right;">21.34647</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">c_trtA</td>
+<td style="text-align: left;">15000</td>
+<td style="text-align: right;">323809.5</td>
+<td style="text-align: right;">22.14902</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">c_trtA</td>
+<td style="text-align: left;">9000</td>
+<td style="text-align: right;">154535.4</td>
+<td style="text-align: right;">21.34647</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">c_trtA</td>
+<td style="text-align: left;">9000</td>
+<td style="text-align: right;">256099.9</td>
+<td style="text-align: right;">22.14902</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">r_discount</td>
+<td style="text-align: left;">0.015</td>
+<td style="text-align: right;">241780.4</td>
+<td style="text-align: right;">29.21809</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">r_discount</td>
+<td style="text-align: left;">0.015</td>
+<td style="text-align: right;">451416.6</td>
+<td style="text-align: right;">30.28299</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">r_discount</td>
+<td style="text-align: left;">0.045</td>
+<td style="text-align: right;">106923.1</td>
+<td style="text-align: right;">16.64342</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">r_discount</td>
+<td style="text-align: left;">0.045</td>
+<td style="text-align: right;">201485.2</td>
+<td style="text-align: right;">17.28144</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">u_trtA</td>
+<td style="text-align: left;">0.85</td>
+<td style="text-align: right;">154535.4</td>
+<td style="text-align: right;">21.34647</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">u_trtA</td>
+<td style="text-align: left;">0.85</td>
+<td style="text-align: right;">289954.7</td>
+<td style="text-align: right;">21.74774</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SoC</td>
+<td style="text-align: left;">u_trtA</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">154535.4</td>
+<td style="text-align: right;">21.34647</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">trtA</td>
+<td style="text-align: left;">u_trtA</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">289954.7</td>
+<td style="text-align: right;">22.34966</td>
+</tr>
+</tbody>
+</table>
+
+DSA results are commonly displayed as tornado plot.
+
+``` r
+tornado_plot <- plot(res_dsa,
+                     strategy = "trtA",
+                     result = "icer",
+                     type = "difference")
+
+tornado_plot +
+    theme_minimal() +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    geom_vline(xintercept = icer$icer)
+```
+
+    Scale for x is already present.
+    Adding another scale for x, which will replace the existing scale.
+
+![](markov_model_tutorial.markdown_strict_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+
+**\*\*Question: Interpret the tornado plot. Does decreasing each
+parameter (utility of treatment A, cost of treatment A, and discount
+rate) to its lower bound decrease or increase the ICER? How about
+increasing each parameter? Which parameter is the ICER most sensitive
+to?**
+
 ### Probabilistic sensitivity analysis

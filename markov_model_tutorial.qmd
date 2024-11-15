@@ -305,4 +305,55 @@ knitr::kable(icer)
 
 ### One-way sensitivity analysis
 
+Let's examine the sensitivity of our results to the following parameters:
+
+-   Utility of sick individuals under treatment A
+
+-   The cost of treatment A
+
+-   The discount rate
+
+```{r}
+dsa_params <-  define_dsa (
+                    u_trtA, 0.85, 1,  # define lower and upper bounds, in the base case u_trtA = 0.95
+                    c_trtA, 9000, 15000, # define lower and upper bounds, in the base case c_trtA = 12000
+                    r_discount, 0.015, 0.045 # define lower and upper bounds, in the base case r_discount = 0.03
+                  )
+
+# Re-run the model
+res_dsa <- run_dsa(
+                  model = res_mod,
+                  dsa = dsa_params
+)
+
+```
+
+Let's look at the results in a table.
+
+```{r}
+dsa_temp <- res_dsa$dsa
+
+dsa_totals <-  dsa_temp %>% 
+                      select(strategy=.strategy_names, parameter=.par_names, value=.par_value
+                             , cost, utility) %>%   arrange(parameter, value)
+knitr::kable(dsa_totals)
+
+```
+
+DSA results are commonly displayed as tornado plot.
+
+```{r}
+tornado_plot <- plot(res_dsa,
+                     strategy = "trtA",
+                     result = "icer",
+                     type = "difference")
+
+tornado_plot +
+    theme_minimal() +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    geom_vline(xintercept = icer$icer)
+```
+
+**\*\*Question: Interpret the tornado plot. Does decreasing each parameter (utility of treatment A, cost of treatment A, and discount rate) to its lower bound decrease or increase the ICER? How about increasing each parameter? Which parameter is the ICER most sensitive to?**
+
 ### Probabilistic sensitivity analysis
