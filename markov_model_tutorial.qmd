@@ -8,6 +8,147 @@ This example and code comes from: Alarid-Escudero F, Krijkamp EM, Enns EA, Yang 
 
 ## Model description
 
-Sick-sicker model schematic
+A disease has four health states, healthy, sick, sicker, and death. In this model, we simulate a hypothetical cohort of 25-y-olds in the \"Healthy\" state (denoted \"H\") until they reach a maximum age of 100 y. We will simulate the cohort dynamics in annual cycle lengths, requiring a total of 75 one-year cycles.
+
+Healthy individuals are at risk of developing the disease when they transition to the \"Sick\" state (denoted by \"S1\") with an annual rate of r_HS1. Sick individuals are at risk of further progressing to a more severe disease stage, the \"Sicker\" health state (denoted by \"S2\") with an annual rate of r_S1S2. Individuals in S1 can recover and return to H (p_S1H). However, once individuals reach S2, they cannot recover; the rate of transitioning to S1 or H from S2 is zero. Individuals in H face a constant background mortality (p_HD) due to other causes of death. Individuals in S1 and S2 face an increased hazard of death, compared with healthy individuals, in the form of an HR of 3 and 10, respectively, relative to the background mortality rate.
+
+#### Kate needs to give more info on probs!!
+
+We first must transform all transition rates to probabilities. Individuals in S1 and S2 also experience increased health care costs and reduced quality of life (QoL) compared with individuals in H. When individuals die, they transition to the absorbing \"Dead\" state (denoted by \"D\"). We discount both costs and QALYs at an annual rate of 3%.
+
+We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and strategy A. Strategy A involves administering treatment A that increases the QoL of individuals in S1 from 0.75 (utility without treatment, u_S1) to 0.95 (utility with treatment A, u_trtA). Treatment A costs \$12,000 per year (c_trtA). This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
+
+We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment under the treatment strategies. After comparing the 4 strategies in terms of expected QALYs and costs, we calculate the incremental cost per QALY gained between nondominated strategies.
+
+**Sick-sicker model schematic:**
 
 ![](Figures/Sick_sicker_model_schematic.jpeg)
+
+## Modeling
+
+First we'll load some helpful packages.
+
+```{r}
+# Note the packages must first be installed with:
+# install.packages("tidyverse")
+# install.packages("heemod")
+
+library(tidyverse)
+library(heemod)
+```
+
+### Defining parameters
+
+First, define parameters based on the model description.
+
+```{r}
+## Transition probabilities (annual), and hazard ratios (HRs)
+r_HD <- 0.002 # annual rate of dying when Healthy (all-cause mortality rate)
+r_HS1 <- 0.15 # annual rate of becoming Sick when Healthy
+r_S1H <- 0.5 # annual rate of becoming Healthy when Sick
+r_S1S2 <- 0.105 # annual rate of becoming Sicker when Sick
+hr_S1 <- 3 # hazard ratio of death in Sick vs Healthy
+hr_S2 <- 10 # hazard ratio of death in Sicker vs Healthy
+
+# compute mortality rates
+r_S1D <- r_HD * hr_S1 # annual mortality rate in the Sick state
+r_S2D <- r_HD * hr_S2 # annual mortality rate in the Sicker state
+```
+
+Then we can transform all rates to probabilities by scaling by the cycle length (1 year).
+
+```{r}
+# Note: heemod also has helper functions for transformations, but for now we'll apply the formulas you learned in class
+# e.g. p_HS1 <- rate_to_prob(r=r_HS1, per=cycle_length)
+
+cycle_length <- 1
+
+## Transitions between states
+p_HS1 <- 1 - exp(-r_HS1 * cycle_length) # transition probability of becoming Sick when Healthy
+p_S1H <- 1 - exp(-r_S1H * cycle_length) # transition probability of becoming Healthy when Sick
+p_S1S2 <- 1 - exp(-r_S1S2 * cycle_length) # transition probability of becoming Sicker when Sick
+
+### Transitions to death
+p_HD <- 1 - exp(-r_HD * cycle_length) # annual background mortality risk (i.e., probability)
+p_S1D <- 1 - exp(-r_S1D * cycle_length) # annual probability of dying when Sick
+p_S2D <- 1 - exp(-r_S2D * cycle_length) # annual probability of dying when Sicker
+```
+
+Now we put all the parameters we've defined, as well as some global parameters into the form that heemod wants them in:
+
+```{r}
+
+param <- define_parameters(
+# global parameters
+age_init = 25, # starting age
+age = age_init + model_time, # model_time is a count (1,2,3...) defined by the heemod run_model function
+r_discount = 0.03, # discount rate for costs and QALYs
+
+# transtion probabilities
+p_HS1 = p_HS1,
+p_S1H = p_S1H,
+p_S1S2 = p_S1S2,
+p_HD = p_HD,
+p_S1D = p_S1D,
+p_S2D = p_S2D,
+
+## State rewards
+## Costs
+c_H = 2000, # annual cost of being Healthy
+c_S1 = 4000, # annual cost of being Sick
+c_S2 = 15000, # annual cost of being Sicker
+c_D = 0, # annual cost of being dead
+c_trtA = 12000, # annual cost of receiving treatment A
+
+# Utilities
+u_H = 1, # annual utility of being Healthy
+u_S1 = 0.75, # annual utility of being Sick
+u_S2 = 0.5, # annual utility of being Sicker
+u_D = 0, # annual utility of being dead
+u_trtA = 0.95 # annual utility when receiving treatment A
+)
+```
+
+### Creating transition matrices
+
+```{r}
+
+```
+
+### Defining states
+
+```{r}
+
+```
+
+### Defining strategies
+
+```{r}
+
+```
+
+The initial distribution between states in model cycle 0 also needs to be defined. All patients start in the healthy state.
+
+```{r}
+ v_m_init <- c(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
+```
+
+### Run the model
+
+```{r}
+  res_mod <- run_model(
+    init=time0,
+    normal = strat_normal,
+    hepa = strat_hepa,
+    cycles = totalCycles,
+    parameters = param,
+    cost = cost_total,
+    effect = life_year
+  )
+```
+
+## Sensitivity Analyses
+
+### One-way sensitivity analysis
+
+### Probabilistic sensitivity analysis
