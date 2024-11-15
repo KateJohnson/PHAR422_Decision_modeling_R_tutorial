@@ -354,6 +354,6 @@ tornado_plot +
     geom_vline(xintercept = icer$icer)
 ```
 
-**\*\*Question: Interpret the tornado plot. Does decreasing each parameter (utility of treatment A, cost of treatment A, and discount rate) to its lower bound decrease or increase the ICER? How about increasing each parameter? Which parameter is the ICER most sensitive to?**
+**\*\*Question: Interpret the tornado plot. Does decreasing each parameter (utility of treatment A, cost of treatment A, and discount rate) to its lower bound decrease or increase the ICER? How about increasing each parameter? Which parameter is the ICER most sensitive to? Is treatment A cost-effective under any DSA?**
 
 ### Probabilistic sensitivity analysis
