@@ -1,5 +1,5 @@
 ---
-title: "Sick-sicker cohort model"
+title: "PHAR 422: Sick-sicker Cohort Markov Model Tutorial"
 format: html
 editor: visual
 ---
@@ -10,15 +10,13 @@ This example and code comes from: Alarid-Escudero F, Krijkamp EM, Enns EA, Yang 
 
 A disease has four health states, healthy, sick, sicker, and death. In this model, we simulate a hypothetical cohort of 25-y-olds in the \"Healthy\" state (denoted \"H\") until they reach a maximum age of 100 y. We will simulate the cohort dynamics in annual cycle lengths, requiring a total of 75 one-year cycles.
 
-Healthy individuals are at risk of developing the disease when they transition to the \"Sick\" state (denoted by \"S1\") with an annual rate of r_HS1. Sick individuals are at risk of further progressing to a more severe disease stage, the \"Sicker\" health state (denoted by \"S2\") with an annual rate of r_S1S2. Individuals in S1 can recover and return to H (p_S1H). However, once individuals reach S2, they cannot recover; the rate of transitioning to S1 or H from S2 is zero. Individuals in H face a constant background mortality (p_HD) due to other causes of death. Individuals in S1 and S2 face an increased hazard of death, compared with healthy individuals, in the form of an HR of 3 and 10, respectively, relative to the background mortality rate.
+Healthy individuals are at risk of developing the disease when they transition to the \"Sick\" state (denoted by \"S1\") with an annual rate of 15 'sick' cases per 100 patient years (`r_HS1`). Sick individuals are at risk of further progressing to a more severe disease stage, the \"sicker\" health state (denoted by \"S2\") with an annual rate of 105 'sicker' cases per 1000 'sick' patient years(`r_S1S2`). Individuals in S1 can recover and return to H, at a rate of 1 patient recovering for every 2 patients spending a year in the 'sick' state (`p_S1H`). However, once individuals reach S2, they cannot recover to either the sick (S1) or healthy (H) states. Healthy individuals (those in H) face a constant background mortality (`p_HD`) due to other causes of death of 0.002 per patient-year. Individuals in S1 and S2 face an increased hazard of death, compared with healthy individuals, in the form of an HR of 3 and 10, respectively, relative to the background mortality rate.
 
-#### Kate needs to give more info on probs!!
+Individuals in S1 experience health care costs of \$4,000 per year compared to \$2,000 per year for healthy individuals. Those in S2 experience annual health care costs of \$15,000. The utility for the healthy state is 1, for the sick state it is 0.75, for the sicker state it is 0.5, and for the death state it is 0. When individuals die, they transition to the absorbing \"Dead\" state (denoted by \"D\"). We discount both costs and QALYs at an annual rate of 3%.
 
-We first must transform all transition rates to probabilities. Individuals in S1 and S2 also experience increased health care costs and reduced quality of life (QoL) compared with individuals in H. When individuals die, they transition to the absorbing \"Dead\" state (denoted by \"D\"). We discount both costs and QALYs at an annual rate of 3%.
+We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and treatment A. Treatment A that increases the QoL of individuals in S1 from 0.75 (utility without treatment, `u_S1`) to 0.95 (utility with treatment A, `u_trtA`). Treatment A costs \$12,000 per year (`c_trtA`). We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment. This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
 
-We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and strategy A. Strategy A involves administering treatment A that increases the QoL of individuals in S1 from 0.75 (utility without treatment, u_S1) to 0.95 (utility with treatment A, u_trtA). Treatment A costs \$12,000 per year (c_trtA). This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
-
-We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment under the treatment strategies. After comparing the 4 strategies in terms of expected QALYs and costs, we calculate the incremental cost per QALY gained between nondominated strategies.
+Calculate the incremental cost per QALY gained.
 
 **Sick-sicker model schematic:**
 
@@ -74,7 +72,7 @@ p_S1D <- 1 - exp(-r_S1D * cycle_length) # annual probability of dying when Sick
 p_S2D <- 1 - exp(-r_S2D * cycle_length) # annual probability of dying when Sicker
 ```
 
-Now we put all the parameters we've defined, as well as some global parameters into the form that heemod wants them in:
+Now we put all the parameters we've defined and some global parameters into the form that heemod wants them in:
 
 ```{r}
 param <- define_parameters(
@@ -130,7 +128,8 @@ mat_strA <- define_transition(
   state_names = states
 )
 
-plot(mat_strA)
+plot(mat_SoC) # visual checks
+plot(mat_strA) 
 ```
 
 ### Defining states
@@ -203,7 +202,7 @@ strat_strA <- define_strategy(
 )
 ```
 
-The initial distribution between states in model cycle 0 also needs to be defined. All patients start in the healthy state.
+The initial distribution between states in model cycle 0 also needs to be defined. All patients start in the healthy state. Note that in this case we're simulating the state transitions for only 1 patient as it simplifies results reporting, which by convention are usually reported as costs and QALYs *per patient*. If it's easier you can think of the resulting markov trace as showing the proportion of patients in each state in each model cycle.
 
 ```{r}
 time0 <- define_init(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
@@ -215,18 +214,92 @@ time0 <- define_init(H = 1, S1 = 0, S2 = 0, D = 0) # initial state vector
 # run for 75 model cycles (years)
 total_cycles <- 75
 
+# model run
 res_mod <- run_model(
     init=time0,
     cycles = total_cycles, 
     SoC = strat_SoC, 
-    strA = strat_strA,
+    trtA = strat_strA,
     parameters = param,
     cost = cost,
     effect =  utility
   )
-
-res_mod
 ```
+
+First let's look at the markov trace showing the probability distribution between states for each of the 75 model cycles.
+
+```{r}
+# Default heemod plot giving the proportion of patients in each model cycle
+plot(res_mod)
+
+# The same information but as data frames for each strategy
+markov_trace <- get_counts(res_mod) 
+
+markov_trace_SoC <- markov_trace %>% 
+                        rename(strategy=.strategy_names, model_cycle=model_time, state
+                               =state_names, proportion=count) %>% 
+                    filter(strategy=="SoC") %>% 
+                    pivot_wider(names_from=state, values_from=proportion)
+
+markov_trace_trtA <- markov_trace %>% 
+                        rename(strategy=.strategy_names, model_cycle=model_time, state
+                               =state_names, proportion=count) %>% 
+                    filter(strategy=="trtA") %>% 
+                    pivot_wider(names_from=state, values_from=proportion)
+```
+
+**\*\*Question: Are there any differences between the Markov traces for each strategy? Why or why not?**
+
+Now let's look at the costs and QALYs for each model cycle in both strategies.
+
+```{r}
+cycle_payoffs <- get_values(res_mod)
+
+cycle_payoffs_SoC <- cycle_payoffs %>% 
+                          select(strategy=.strategy_names, model_cycle=model_time, payoffs
+                                 =value_names, value) %>% 
+                          filter(strategy=="SoC") %>% 
+                          pivot_wider(names_from=payoffs, values_from=value)
+
+cycle_payoffs_trtA <- cycle_payoffs %>% 
+                          select(strategy=.strategy_names, model_cycle=model_time, payoffs
+                                 =value_names, value) %>% 
+                          filter(strategy=="trtA") %>% 
+                          pivot_wider(names_from=payoffs, values_from=value)
+
+```
+
+**\*\*Question: Are there any differences between the cycle payoffs for each strategy? Why or why not?**
+
+Now, let's sum the model payoffs to get total costs and QALYs for each strategy.
+
+```{r}
+## Two different ways to get total costs and QALYS for each strategy
+# 1. Using our payoffs data: 
+knitr::kable(cycle_payoffs_SoC %>% 
+    summarise(total_cost=sum(cost), total_QALY=sum(utility)) %>% 
+      mutate(strategy="SoC"))
+
+knitr::kable(cycle_payoffs_trtA %>% 
+    summarise(total_cost=sum(cost), total_QALY=sum(utility)) %>% 
+      mutate(strategy="trtA"))
+
+# 2. Looking at the default outputs of the run_model function
+summary(res_mod)
+
+# Putting the incremental results in a prettier dataframe
+icer <- summary(res_mod)$res_comp 
+
+icer <- icer %>% 
+            mutate(ref="SoC") %>% 
+            select(strategy=.strategy_names, ref, deltaCost=.dcost, deltaEffect=.deffect,
+                   icer=.icer) %>% 
+            filter(strategy=="trtA")
+    
+knitr::kable(icer)
+```
+
+**\*\*Question: What is the ICER? Would you fund treatment A?**
 
 ## Sensitivity Analyses
 
