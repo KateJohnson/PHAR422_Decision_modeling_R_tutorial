@@ -12,15 +12,15 @@ Example](https://journals.sagepub.com/doi/full/10.1177/0272989X221103163).
 
 A disease has four health states, healthy, sick, sicker, and death. In
 this model, we simulate a hypothetical cohort of 25-y-olds in the
-"Healthy" state (denoted "H") until they reach a maximum age of 100 y.
+“Healthy” state (denoted “H”) until they reach a maximum age of 100 y.
 We will simulate the cohort dynamics in annual cycle lengths, requiring
 a total of 75 one-year cycles.
 
 Healthy individuals are at risk of developing the disease when they
-transition to the "Sick" state (denoted by "S1") with an annual rate of
+transition to the “Sick” state (denoted by “S1”) with an annual rate of
 15 ‘sick’ cases per 100 patient years (`r_HS1`). Sick individuals are at
-risk of further progressing to a more severe disease stage, the "sicker"
-health state (denoted by "S2") with an annual rate of 105 ‘sicker’ cases
+risk of further progressing to a more severe disease stage, the “sicker”
+health state (denoted by “S2”) with an annual rate of 105 ‘sicker’ cases
 per 1000 ‘sick’ patient years(`r_S1S2`). Individuals in S1 can recover
 and return to H, at a rate of 1 patient recovering for every 2 patients
 spending a year in the ‘sick’ state (`p_S1H`). However, once individuals
@@ -36,7 +36,7 @@ compared to $2,000 per year for healthy individuals. Those in S2
 experience annual health care costs of $15,000. The utility for the
 healthy state is 1, for the sick state it is 0.75, for the sicker state
 it is 0.5, and for the death state it is 0. When individuals die, they
-transition to the absorbing "Dead" state (denoted by "D"). We discount
+transition to the absorbing “Dead” state (denoted by “D”). We discount
 both costs and QALYs at an annual rate of 3%.
 
 We are interested in evaluating the cost-effectiveness of strategies:
@@ -477,7 +477,7 @@ knitr::kable(icer)
 
 ## Sensitivity Analyses
 
-### One-way sensitivity analysis
+### One-way (‘discrete’) sensitivity analysis (DSA)
 
 Let’s examine the sensitivity of our results to the following
 parameters:
@@ -638,6 +638,79 @@ tornado_plot +
 parameter (utility of treatment A, cost of treatment A, and discount
 rate) to its lower bound decrease or increase the ICER? How about
 increasing each parameter? Which parameter is the ICER most sensitive
-to?**
+to? Is treatment A cost-effective under any DSA?**
 
-### Probabilistic sensitivity analysis
+### Probabilistic sensitivity analysis (PSA)
+
+**\*\*Question: What is a PSA? (Hint: try asking ChatGPT. Is it right?).
+What type of model uncertainty does it address? What advantages does it
+have over one-way sensitivity analysis?**
+
+``` r
+psa_params <- define_psa(
+    p_HS1 ~ gamma(mean = 0.139, sd = 0.027), # prob of becoming Sick when Healthy
+    p_S1H ~ gamma(mean = 0.393, sd = 0.063),  # prob of becoming Healthy when Sick
+    p_S1S2 ~ gamma(mean = 0.0997, sd = 0.011), # prob of becoming Sicker when Sick
+    p_HD ~ gamma(mean = 0.002, sd = 0.000045), # prob of dying when Healthy
+    p_S1D ~ gamma(mean = 0.006, sd = 0.00014), # prob of dying when sick
+    p_S2D ~ gamma(mean = 0.020, sd = 0.00045), # prob of dying when sicker
+
+    # Costs
+    c_H ~ gamma(mean = 2000, sd = 200),     # cost of Healthy 
+    c_S1 ~ gamma(mean = 4000, sd = 300), # cost of Sick 
+    c_S2 ~ gamma(mean = 15000, sd = 1000),   # cost of Sicker 
+    c_trtA ~ gamma(mean = 12000, sd = 1400), # cost of treatment A
+
+    # Utilities
+    u_H ~ beta(shape1 = 200, shape2 = 3),     # utility when Healthy 
+    u_S1 ~ beta(shape1 = 130, shape2 = 45),    # utility when Sick 
+    u_S2 ~ beta(shape1 = 230, shape2 = 230),   # utility when Sicker
+    u_trtA ~ beta(shape1 = 300, shape2 = 15)     # utility when being treated with A
+)
+```
+
+Now we run the probabilistic model.
+
+``` r
+res_psa <- run_psa(
+          model = res_mod,
+          psa = psa_params,
+          N = 1000
+        )
+```
+
+    Resampling strategy 'SoC'...
+    Resampling strategy 'SoC'...
+
+    Resampling strategy 'trtA'...
+    Resampling strategy 'trtA'...
+
+Let’s visualize the results on a cost-effectiveness plane.
+
+``` r
+plot(res_psa, type = "ce") +
+    xlab("Incremental QALYs") +
+    ylab("Incremental Costs ($)") +
+  theme_minimal() +
+  geom_abline(slope=50000, intercept=0)
+```
+
+![](markov_model_tutorial.markdown_strict_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+
+**\*\*Question: Interpret the CE plane. What does the black line
+represent? Is treatment A cost-effective at a WTP of $50,000/QALY? Does
+this information change your decision on whether to fund treatment A?**
+
+Now let’s make a cost-effectiveness acceptability curve (CEAC):
+
+``` r
+plot(res_psa, type = "ac", max_wtp = 250000, log_scale = FALSE) +
+  theme_minimal()
+```
+
+![](markov_model_tutorial.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+
+**\*\*Question: Interpret the CEAC. At what WTP does treatment A have a
+50% probability of cost-effectiveness? At what WTP is the probability of
+cost-effectiveness 100%? Does this information change your decision on
+whether to fund treatment A?**
