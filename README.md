@@ -6,7 +6,6 @@
 - Develop a probabilistic sensitivity analysis
 - Characterize parameter uncertainty using a cost effectiveness acceptability curves
 
-The tutorial can be found [here](https://github.com/KateJohnson/PHAR422_Decision_modeling_R_tutorial/blob/main/markov_model_tutorial_post.md).
 
 ## Installation
 
