@@ -177,7 +177,7 @@ u_trtA = 0.95 # annual utility when receiving treatment A
 **\*\*Question: Create the transition matrix for each strategy below.
 Remember the transition matrix should look as follows:**
 
-<img src="Figures/Transition_matrix.png" width="320" />
+<img src="Figures/Transition_matrix.png" width="218" />
 
 **Hint: Enter `C` for the probability of remaining in the same state
 between model cycles (e.g. H -\> H). It equals 1- the sum of all other
@@ -217,8 +217,8 @@ plot(mat_strA)
 
 ### Defining states
 
-**\*\*Question: Add in the costs of treatment `c_trtA`** **to one of
-the** `cost=` **functions. Which states should it be added to?\*\***
+**\*\*Question: Add in the costs of treatment `c_trtA`** **to the**
+`cost=` **functions. Which states should it be added to?\*\***
 
 ``` r
 ## Standard of Care (SoC)
@@ -677,7 +677,7 @@ have over one-way sensitivity analysis?**
 **\*\*Question: One of the most challenging parts of doing a PSA is
 defining distributions for each parameter using the available evidence.
 Often this requires converting summary information from the literature,
-of the mean and sd, into the parameters required for your desired
+usually the mean and sd, into the parameters required for your desired
 distribution, which is generally defined by the type of variable being
 modeled. We will do this for the utility parameters as an example.
 Because utilities have a range of 0 to 1, and can take any values in
