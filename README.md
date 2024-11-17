@@ -16,7 +16,7 @@ follow these instructions from the UBC MDS program https://ubc-mds.github.io/res
 
 **Please do this before the start of class**
 ------
-# Download a local version of this repository
+## Download a local version of this repository
 
 - Go to https://github.com/KateJohnson/PHAR422_Decision_modeling_R_tutorial
 - Under the green 'code' button (top right), 'download ZIP' to download a local copy of the entire repository and its contexts
