@@ -23,6 +23,7 @@ follow these instructions from the UBC MDS program https://ubc-mds.github.io/res
 ![ ](Figures/download_zip.PNG)
 - Unzip and open the repository from your downloads folder
 - Click to open the `PHAR22_Decision_modeling_R_tutorial.Rproj` folder (in RStudio, if asked)
+- We will work on `markov_model_tutorial.qmd`
 
 *Note: you may want to move the R project folder out of your downloads folder to a more logical place, such as where you store 
 class materials on your computer. You can do that within finder by dragging and dropping the entire folder to your preferred location.
