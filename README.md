@@ -14,8 +14,8 @@ follow these instructions from the UBC MDS program https://ubc-mds.github.io/res
 
 *Note: Select your OS and then search the document for R and R studio. You only need the first paragraph of instructions for each.
 
-**Please do this before the start of class**
-------
+**Please have R and RStudio installed before the start of class**
+
 ## Download a local version of this repository
 
 - Go to https://github.com/KateJohnson/PHAR422_Decision_modeling_R_tutorial
