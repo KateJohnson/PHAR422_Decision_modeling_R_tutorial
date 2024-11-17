@@ -39,6 +39,8 @@ library(heemod)
 
 First, define parameters based on the model description.
 
+**\*\*Question: Fill in the parameters below using the information in the model description.**
+
 ```{r}
 ## Transition probabilities (annual), and hazard ratios (HRs)
 r_HD <- 0.002 # annual rate of dying when Healthy (all-cause mortality rate)
@@ -54,6 +56,8 @@ r_S2D <- r_HD * hr_S2 # annual mortality rate in the Sicker state
 ```
 
 Then we can transform all rates to probabilities by scaling by the cycle length (1 year).
+
+**\*\*Question: Fill in the parameters below by converting all rates to probabilities.**
 
 ```{r}
 # Note: heemod also has helper functions for transformations, but for now we'll apply the formulas you learned in class
@@ -106,6 +110,8 @@ u_trtA = 0.95 # annual utility when receiving treatment A
 ```
 
 ### Creating transition matrices
+
+**\*\*Question: Create the transition matrices below. Enter `C`for the probability of remaining in the same state between model states, e.g. H -\> H, as it equals 1- the sum of all other probabilities in the same row.**
 
 ```{r}
 states <- c("H", "S1", "S2","D")
@@ -359,6 +365,8 @@ tornado_plot +
 ### Probabilistic sensitivity analysis (PSA)
 
 **\*\*Question: What is a PSA? (Hint: try asking ChatGPT. Is it right?). What type of model uncertainty does it address? What advantages does it have over one-way sensitivity analysis?**
+
+**\*\*Question: One of the most challenging parts of doing a PSA is defining distributions for each parameter using the available evidence. Often this requires summary information from the literature (e.g. the parameter mean and sd), into the parameters required for your desired distribution. We will do this the utility parameters as an example. Given the following means and standard deviations, determine the shape 1 and shape 2 parameters in a beta distribution.**
 
 ```{r}
 psa_params <- define_psa(
