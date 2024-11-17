@@ -93,7 +93,10 @@ library(heemod)
 
 ### Defining parameters
 
-First, define parameters based on the model description.
+Now we can define parameters based on the model description.
+
+**\*\*Question: Fill in the parameters below using the information in
+the model description.**
 
 ``` r
 ## Transition probabilities (annual), and hazard ratios (HRs)
@@ -109,8 +112,11 @@ r_S1D <- r_HD * hr_S1 # annual mortality rate in the Sick state
 r_S2D <- r_HD * hr_S2 # annual mortality rate in the Sicker state
 ```
 
-Then we can transform all rates to probabilities by scaling by the cycle
+Then, we transform all rates to probabilities by scaling by the cycle
 length (1 year).
+
+**\*\*Question: Fill in the parameters below by converting all rates to
+probabilities.**
 
 ``` r
 # Note: heemod also has helper functions for transformations, but for now we'll apply the formulas you learned in class
@@ -131,6 +137,9 @@ p_S2D <- 1 - exp(-r_S2D * cycle_length) # annual probability of dying when Sicke
 
 Now we put all the parameters we’ve defined and some global parameters
 into the form that heemod wants them in:
+
+**\*\*Question: Add in the costs and utilities from the model
+description.**
 
 ``` r
 param <- define_parameters(
@@ -165,6 +174,15 @@ u_trtA = 0.95 # annual utility when receiving treatment A
 
 ### Creating transition matrices
 
+**\*\*Question: Create the transition matrix for each strategy below.
+Remember the transition matrix should look as follows:**
+
+<img src="Figures/Transition_matrix.png" width="320" />
+
+**Hint: Enter `C` for the probability of remaining in the same state
+between model cycles (e.g. H -\> H). It equals 1- the sum of all other
+probabilities in the same row.**
+
 ``` r
 states <- c("H", "S1", "S2","D")
 
@@ -198,6 +216,9 @@ plot(mat_strA)
 ![](markov_model_tutorial_post.markdown_strict_files/figure-markdown_strict/unnamed-chunk-5-1.png)
 
 ### Defining states
+
+**\*\*Question: Add in the costs of treatment `c_trtA`** **to one of
+the** `cost=` **functions. Which states should it be added to?\*\***
 
 ``` r
 ## Standard of Care (SoC)
@@ -475,6 +496,8 @@ knitr::kable(icer)
 
 **\*\*Question: What is the ICER? Would you fund treatment A?**
 
+------------------------------------------------------------------------
+
 ## Sensitivity Analyses
 
 ### One-way (‘discrete’) sensitivity analysis (DSA)
@@ -482,11 +505,16 @@ knitr::kable(icer)
 Let’s examine the sensitivity of our results to the following
 parameters:
 
--   Utility of sick individuals under treatment A
+-   Utility of sick individuals under treatment A at 0.85 and 1 (0.95 is
+    the base case)
 
--   The cost of treatment A
+-   The cost of treatment A at $9000 and $15000 ($12000 is the base
+    case)
 
--   The discount rate
+-   The discount rate at 1.5% and 4.5% (1.5% is the base case)
+
+**\*\*Question: Fill in the upper and lower bounds for each parameter
+below:**
 
 ``` r
 dsa_params <-  define_dsa (
@@ -646,6 +674,79 @@ to? Is treatment A cost-effective under any DSA?**
 What type of model uncertainty does it address? What advantages does it
 have over one-way sensitivity analysis?**
 
+**\*\*Question: One of the most challenging parts of doing a PSA is
+defining distributions for each parameter using the available evidence.
+Often this requires converting summary information from the literature,
+of the mean and sd, into the parameters required for your desired
+distribution, which is generally defined by the type of variable being
+modeled. We will do this for the utility parameters as an example.
+Because utilities have a range of 0 to 1, and can take any values in
+between that range, we typically model them with a beta distribution,
+which is defined by 2 shape parameters, alpha (shape1) and beta
+(shape2).**
+
+**Convert the following means and standard deviations into shape
+parameters for a beta distribution.**
+
+-   Healthy utility `u_H`: mean= 0.99\*, sd= 0.0085 \*Note that a beta
+    distribution cannot take the values 0 or 1 so we’re using 0.99 to
+    approximate the mean instead of 1
+
+-   Sick utility `u_S1`: mean= 0.75, sd=0.0329
+
+-   Sicker utility `u_S2`: mean= 0.5, sd=0.0233
+
+-   Utility of sick state on treatment A `u_trtA`: mean=0.95, sd= 0.0120
+
+Here’s a function to help you:
+
+``` r
+# Hint, the function requires 2 inputs, the mean (mu) and the variance (var). Remember that sd is the square root of the variance, sd=sqrt(var), therefore var=...
+estBetaParams <- function(mu, var) {
+  alpha <- ((1 - mu) / var - 1 / mu) * mu ^ 2
+  beta <- alpha * (1 / mu - 1)
+  return(params = list(alpha = alpha, beta = beta))
+}
+
+estBetaParams(0.99, 0.0085^2) # round to the nearest integer
+```
+
+    $alpha
+    [1] 134.664
+
+    $beta
+    [1] 1.360242
+
+``` r
+estBetaParams(0.75, 0.0329^2) # round to the nearest integer
+```
+
+    $alpha
+    [1] 129.1684
+
+    $beta
+    [1] 43.05614
+
+``` r
+estBetaParams(0.5, 0.0233^2) # round to the nearest integer
+```
+
+    $alpha
+    [1] 229.7492
+
+    $beta
+    [1] 229.7492
+
+``` r
+estBetaParams(0.95, 0.0120^2) # round to the nearest integer
+```
+
+    $alpha
+    [1] 312.4181
+
+    $beta
+    [1] 16.44306
+
 ``` r
 psa_params <- define_psa(
     p_HS1 ~ gamma(mean = 0.139, sd = 0.027), # prob of becoming Sick when Healthy
@@ -662,10 +763,10 @@ psa_params <- define_psa(
     c_trtA ~ gamma(mean = 12000, sd = 1400), # cost of treatment A
 
     # Utilities
-    u_H ~ beta(shape1 = 200, shape2 = 3),     # utility when Healthy 
-    u_S1 ~ beta(shape1 = 130, shape2 = 45),    # utility when Sick 
+    u_H ~ beta(shape1 = 135, shape2 = 1),     # utility when Healthy 
+    u_S1 ~ beta(shape1 = 129, shape2 = 43),    # utility when Sick 
     u_S2 ~ beta(shape1 = 230, shape2 = 230),   # utility when Sicker
-    u_trtA ~ beta(shape1 = 300, shape2 = 15)     # utility when being treated with A
+    u_trtA ~ beta(shape1 = 312, shape2 = 16)     # utility when being treated with A
 )
 ```
 
@@ -695,11 +796,12 @@ plot(res_psa, type = "ce") +
   geom_abline(slope=50000, intercept=0)
 ```
 
-![](markov_model_tutorial_post.markdown_strict_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+![](markov_model_tutorial_post.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
 
 **\*\*Question: Interpret the CE plane. What does the black line
-represent? Is treatment A cost-effective at a WTP of $50,000/QALY? Does
-this information change your decision on whether to fund treatment A?**
+represent? Is treatment A cost-effective at a WTP of $50,000/QALY in the
+PSA? Does this information change your decision on whether to fund
+treatment A?**
 
 Now let’s make a cost-effectiveness acceptability curve (CEAC):
 
@@ -708,7 +810,7 @@ plot(res_psa, type = "ac", max_wtp = 250000, log_scale = FALSE) +
   theme_minimal()
 ```
 
-![](markov_model_tutorial_post.markdown_strict_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+![](markov_model_tutorial_post.markdown_strict_files/figure-markdown_strict/unnamed-chunk-20-1.png)
 
 **\*\*Question: Interpret the CEAC. At what WTP does treatment A have a
 50% probability of cost-effectiveness? At what WTP is the probability of
