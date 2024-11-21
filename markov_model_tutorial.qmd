@@ -386,9 +386,9 @@ tornado_plot +
 
 -   Sick utility `u_S1`: mean= 0.75, sd=0.0329
 
--   Sicker utility `u_S2`: mean= 0.5, sd=0.0329
+-   Sicker utility `u_S2`: mean= 0.5, sd=0.0233
 
--   Utility of sick state on treatment A `u_trtA`: mean=0.95, sd= 0.0329
+-   Utility of sick state on treatment A `u_trtA`: mean=0.95, sd= 0.0120
 
 Here's a function to help you:
 
@@ -400,7 +400,7 @@ estBetaParams <- function(mu, var) {
   return(params = list(alpha = alpha, beta = beta))
 }
 
-estBetaParams(, ) # round to the nearest integer
+estBetaParams( , ) # round to the nearest integer
 ```
 
 ```{r}
