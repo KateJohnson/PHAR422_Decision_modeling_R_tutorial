@@ -398,12 +398,15 @@ Here's a function to help you:
 ```{r}
 # Hint, the function requires 2 inputs, the mean (mu) and the variance (var). Remember that sd is the square root of the variance, sd=sqrt(var), therefore var=...
 estBetaParams <- function(mu, var) {
-  alpha <- ((1 - mu) / var - 1 / mu) * mu ^ 2
-  beta <- alpha * (1 / mu - 1)
+  alpha <- round(((1 - mu) / var - 1 / mu) * mu ^ 2, 0)
+  beta <- round(alpha * (1 / mu - 1),0)
   return(params = list(alpha = alpha, beta = beta))
 }
 
-estBetaParams( , ) # round to the nearest integer
+estBetaParams( , ) # u_H
+estBetaParams( , ) # u_S1
+estBetaParams( , ) # u_S2
+estBetaParams( , ) # u_trtA
 ```
 
 ```{r}
