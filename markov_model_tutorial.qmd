@@ -120,7 +120,7 @@ u_trtA =  # annual utility when receiving treatment A
 **Hints:**
 
 1.  **Enter `C` for the probability of remaining in the same state between model cycles (e.g. H -\> H). It equals 1- the sum of all other probabilities in the same row.**
-2.  **All transitions to a non-death health state are conditional on survival. The probability of surviving = `(1-p_HD)`**
+2.  **All transitions to a non-death health state are conditional on survival. The probability of surviving for individuals transitioning from the healthy state (row=H) = `(1-p_HD)`**
 
 ```{r}
 states <- c("H", "S1", "S2","D")
@@ -253,13 +253,13 @@ plot(res_mod)
 markov_trace <- get_counts(res_mod) 
 
 markov_trace_SoC <- markov_trace %>% 
-                        rename(strategy=.strategy_names, model_cycle=markov_cycle, state
+                        rename(strategy=.strategy_names, model_cycle=model_time, state
                                =state_names, proportion=count) %>% 
                     filter(strategy=="SoC") %>% 
                     pivot_wider(names_from=state, values_from=proportion)
 
 markov_trace_trtA <- markov_trace %>% 
-                        rename(strategy=.strategy_names, model_cycle=markov_cycle, state
+                        rename(strategy=.strategy_names, model_cycle=model_time, state
                                =state_names, proportion=count) %>% 
                     filter(strategy=="trtA") %>% 
                     pivot_wider(names_from=state, values_from=proportion)
@@ -273,13 +273,13 @@ Now let's look at the costs and QALYs for each model cycle in both strategies.
 cycle_payoffs <- get_values(res_mod)
 
 cycle_payoffs_SoC <- cycle_payoffs %>% 
-                          select(strategy=.strategy_names, model_cycle=markov_cycle, payoffs
+                          select(strategy=.strategy_names, model_cycle=model_time, payoffs
                                  =value_names, value) %>% 
                           filter(strategy=="SoC") %>% 
                           pivot_wider(names_from=payoffs, values_from=value)
 
 cycle_payoffs_trtA <- cycle_payoffs %>% 
-                          select(strategy=.strategy_names, model_cycle=markov_cycle, payoffs
+                          select(strategy=.strategy_names, model_cycle=model_time, payoffs
                                  =value_names, value) %>% 
                           filter(strategy=="trtA") %>% 
                           pivot_wider(names_from=payoffs, values_from=value)
