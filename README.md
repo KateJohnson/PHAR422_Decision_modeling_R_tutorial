@@ -1,4 +1,4 @@
-# PHAR422 Decision modeling in R tutorial (Fall 2024)
+# PHAR422 Decision modeling in R tutorial (Fall 2026)
 
 ## Learning Objectives
 - Construct a cohort-based Markov model in R
@@ -23,10 +23,7 @@ We will be working on local installations of *R* and *RStudio*. If you do not al
 
 ---
 
-**Note:** For more detailed instructions, visit the [UBC MDS installation guide](https://ubc-mds.github.io/resources_pages/installation_instructions/).  
-Select your OS and then review the sections for **R**, **XQuartz**, **IRkernel**, and **RStudio**.  
-You only need the first paragraph of instructions for each.
-
+**Note:** For more detailed instructions, visit https://github.com/KateJohnson/PHAR305_Rtutorials
 ---
 
 **Please have R and RStudio installed before the start of class.**
