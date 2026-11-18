@@ -14,7 +14,7 @@ Healthy individuals are at risk of developing the disease when they transition t
 
 Individuals in S1 experience health care costs of \$4,000 per year compared to \$2,000 per year for healthy individuals. Those in S2 experience annual health care costs of \$15,000. The utility for the healthy state is 1, for the sick state it is 0.75, for the sicker state it is 0.5, and for the death state it is 0. When individuals die, they transition to the absorbing "Dead" state (denoted by "D"). We discount both costs and QALYs at an annual rate of 3%.
 
-We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and treatment A. Treatment A that increases the QoL of individuals in S1 from 0.75 (utility without treatment, `u_S1`) to 0.95 (utility with treatment A, `u_trtA`). Treatment A costs \$12,000 per year (`c_trtA`). We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment. This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
+We are interested in evaluating the cost-effectiveness of strategies: the standard of care (strategy SoC) and treatment A. Treatment A increases the QoL of individuals in S1 from 0.75 (utility without treatment, `u_S1`) to 0.95 (utility with treatment A, `u_trtA`). Treatment A costs \$12,000 per year (`c_trtA`). We assume that it is not possible to distinguish between Sick and Sicker patients; therefore, individuals in both disease states receive the treatment. This strategy does not affect the QoL of individuals in S2, nor does it change the risk of becoming sick or progressing through the sick states.
 
 Calculate the incremental cost per QALY gained.
 
@@ -42,7 +42,7 @@ Now we can define parameters based on the model description.
 **\*\*Question: Fill in the parameters below using the information in the model description.**
 
 ```{r}
-## Transition probabilities (annual), and hazard ratios (HRs)
+## Transition rates (annual), and hazard ratios (HRs)
 r_HD <-  # annual rate of dying when Healthy (all-cause mortality rate)
 r_HS1 <-  # annual rate of becoming Sick when Healthy
 r_S1H <-  # annual rate of becoming Healthy when Sick
@@ -51,8 +51,8 @@ hr_S1 <-  # hazard ratio of death in Sick vs Healthy
 hr_S2 <-  # hazard ratio of death in Sicker vs Healthy
 
 # compute mortality rates
-r_S1D <-  # annual mortality rate in the Sick state (hint, multiply the all-cause mrotality rate by the hazard ratio)
-r_S2D <-  # annual mortality rate in the Sicker state (hint, multiply the all-cause mrotality rate by the hazard ratio)
+r_S1D <-  # annual mortality rate in the Sick state (hint, multiply the all-cause mortality rate by the hazard ratio)
+r_S2D <-  # annual mortality rate in the Sicker state (hint, multiply the all-cause mortality rate by the hazard ratio)
 ```
 
 Then, we transform all rates to probabilities by scaling by the cycle length (1 year).
@@ -86,7 +86,7 @@ param <- define_parameters(
 age_init = 25, # starting age
 r_discount = 0.03, # discount rate for costs and QALYs
 
-# transtion probabilities
+# transition probabilities
 p_HS1 = p_HS1,
 p_S1H = p_S1H,
 p_S1S2 = p_S1S2,
@@ -330,7 +330,7 @@ Let's examine the sensitivity of our results to the following parameters:
 
 -   The cost of treatment A at \$9000 and \$15000 (\$12000 is the base case)
 
--   The discount rate at 1.5% and 4.5% (1.5% is the base case)
+-   The discount rate at 1.5% and 4.5% (3% is the base case)
 
 **\*\*Question: Fill in the upper and lower bounds for each parameter below:**
 
@@ -379,7 +379,7 @@ tornado_plot +
 
 ### Probabilistic sensitivity analysis (PSA)
 
-**\*\*Question: What is a PSA?. What type of model uncertainty does it address? What advantages does it have over one-way sensitivity analysis?**
+**\*\*Question: What is a PSA? What type of model uncertainty does it address? What advantages does it have over one-way sensitivity analysis?**
 
 **\*\*Question: One of the most challenging parts of doing a PSA is defining distributions for each parameter using the available evidence. Often this requires converting summary information from the literature, usually the mean and sd, into the parameters required for your desired distribution, which is generally defined by the type of variable being modeled. We will do this for the utility parameters as an example. Because utilities have a range of 0 to 1, and can take any values in between that range, we typically model them with a beta distribution, which is defined by 2 shape parameters, alpha (shape1) and beta (shape2).**
 
